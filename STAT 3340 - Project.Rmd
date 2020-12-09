@@ -1,0 +1,182 @@
+---
+title: "STAT 3340 - Project"
+author: "Xiaoyan Chang, Yansong Li, Yichen Yu"
+date: "12/11/2020"
+output: html_document
+---
+
+```{r}
+# Import the data set
+insurance <- read.csv("C:/Users/Jhon/Desktop/3340 - Final Project/insurance.csv")
+```
+
+```{r}
+# Packages Installation
+install.packages('tidyverse')
+install.packages('latticeExtra')
+install.packages("ggplot2")
+install.packages("ggpubr")
+install.packages("ggcorrplot")
+install.packages("leaps")
+install.packages("MPV")
+install.packages("faraway")
+```
+
+
+```{r}
+# Packages Loading
+library(latticeExtra)
+library(tidyverse) 
+library(ggplot2)
+library(ggpubr)
+library(ggcorrplot)
+library(leaps)
+library(MPV)
+library(faraway)
+```
+
+
+```{r}
+#Convert character variables to numeric
+
+#female = 1; male = 2
+sex <- as.numeric(as.factor(insurance$sex))
+
+#smoker = 2; non-smoker = 1
+smoker<- as.numeric(as.factor(insurance$smoker))
+
+#northeast = 1; northwest = 2; southeast = 3; southwest = 4;
+region <- as.numeric(as.factor(insurance$region))
+
+#assign age to a variable
+age <- (insurance$age)
+
+#assign bmi to a variable
+bmi <- (insurance$bmi)
+
+#assign children to a variable
+children <- (insurance$children)
+
+#assign charges to a variable
+charges <- (insurance$charges)
+
+#Re-construct a data frame
+new_insurance <- cbind.data.frame(age, sex, bmi, children, smoker, region, charges)
+```
+
+
+```{r}
+#distribution of charges and age
+ggplot(new_insurance, aes(charges))+geom_histogram(binwidth=5000,color="lightblue",fill="lightblue")+geom_vline(aes(xintercept=mean(charges)),size=1,color="blue", linetype="dashed")
+ggplot(new_insurance, aes(age))+geom_histogram(binwidth=5,color="lightpink",fill="lightpink")+geom_vline(aes(xintercept=mean(age)),size=1,color="red", linetype="dashed")
+```
+
+
+```{r}
+#Compare age and charges
+A=ggplot(insurance, aes(age, charges))+
+  geom_point(stat='identity')+
+  ggtitle("Age VS.Charges")
+A
+```
+
+```{r}
+#Compare sex and charges
+ggplot(insurance, aes(sex, charges, color = sex))+
+  geom_point()+
+  ggtitle("Sex VS.Charges")
+```
+
+```{r}
+#Compare bmi and charges
+B=ggplot(insurance, aes(bmi, charges))+
+  geom_point()+
+  ggtitle("BMI VS. Charges")
+B
+```
+
+```{r}
+#Compare smoker and charges
+C=ggplot(insurance, aes(smoker, charges, color = smoker))+
+  geom_point()+
+  ggtitle("Smoker VS. Charges")
+C
+```
+
+```{r}
+#Compare children and charges
+D=ggplot(insurance, aes(children, charges, color = children))+
+  geom_point()+
+  ggtitle("Children VS. Charges")
+D
+```
+
+```{r}
+#Compare region and charges
+ggplot(insurance, aes(region, charges, color = region))+
+  geom_point()+
+  ggtitle("Region VS. Charges")
+```
+
+```{r}
+#Combine 4 plots used in the paper
+ggarrange(A,B,C,D,ncol=2,nrow=2)
+```
+
+```{r}
+#Generate and visualize the correlation matrix
+data.cor = cor(new_insurance)
+data.cor
+ggcorrplot(cor(new_insurance))
+```
+
+```{r}
+#Model fitting using Stepwise method
+
+#include intercept only
+nullmodel=lm(charges~1) 
+
+#full model has all main effects, no interactions
+fullmodel=lm(charges~age+sex+bmi+children+smoker+region)  
+
+#step1: forward selection
+step1 = step(nullmodel,scope=list(lower=nullmodel, upper=fullmodel), direction="forward")
+```
+
+
+```{r}
+#full model with one interaction
+fullmodel2=lm(charges~ age+bmi+children+smoker+region + bmi*smoker) 
+
+#step2: backward
+step2=step(fullmodel2,direction="backward")
+```
+```{r}
+#Compare model from full stepwise procedure below to backwards elimination mode since there can be inconsistencies when using stepwise procedures
+step(nullmodel,scope=list(lower=nullmodel,upper=fullmodel2),direction="both")
+```
+```{r}
+ #model from stepwise approach with four plots
+model_stepwise = lm(charges~age + bmi + children + smoker + region + bmi*smoker)
+plot(model_stepwise)
+```
+
+```{r}
+#Compare the adequacy for two models
+#check the adjusted R^2 of stepwise model
+summary(model_stepwise)
+```
+
+```{r}
+#variable transformation due to non-normal distribution in original stepwise model's normal-QQ plot
+stepwise_modified <- lm(log(charges)~1/age + bmi + children + smoker + region + bmi*smoker)
+attach(mtcars)
+par(mfrow=c(2,2))
+plot(stepwise_modified)
+```
+
+```{r}
+#check the adjusted R^2 of modified stepwise model
+summary(stepwise_modified)
+```
+
