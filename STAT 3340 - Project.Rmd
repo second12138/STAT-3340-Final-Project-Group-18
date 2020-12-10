@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r}
-# Import the data set
+# Import the data set， modify the command with your path to the dataset
 insurance <- read.csv("C:/Users/Jhon/Desktop/3340 - Final Project/insurance.csv")
 ```
 
@@ -151,6 +151,7 @@ fullmodel2=lm(charges~ age+bmi+children+smoker+region + bmi*smoker)
 #step2: backward
 step2=step(fullmodel2,direction="backward")
 ```
+
 ```{r}
 #Compare model from full stepwise procedure below to backwards elimination mode since there can be inconsistencies when using stepwise procedures
 step(nullmodel,scope=list(lower=nullmodel,upper=fullmodel2),direction="both")
@@ -158,6 +159,8 @@ step(nullmodel,scope=list(lower=nullmodel,upper=fullmodel2),direction="both")
 ```{r}
  #model from stepwise approach with four plots
 model_stepwise = lm(charges~age + bmi + children + smoker + region + bmi*smoker)
+attach(mtcars)
+par(mfrow=c(2,2))
 plot(model_stepwise)
 ```
 
