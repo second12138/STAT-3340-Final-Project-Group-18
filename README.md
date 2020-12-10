@@ -24,6 +24,7 @@ https://github.com/second12138/STAT-3340-Final-Project-Group-18/blob/main/STAT%2
 ```bash
 1) Clone the project repository 
 2) Open the source code in Rstudio
+3）Import the dataset
 3) Run the code
 ```
 ## Maintainers
